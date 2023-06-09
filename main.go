@@ -19,21 +19,20 @@ type MessageData struct {
 }
 
 var (
-	dbURL string
-	dbUsername string
-	dbPassword string
 	contextFile string
 	logSql bool = false
 )
 
 func main() {
+	databaseCredentials := GetDatabaseCredentials()
+
 	router := gin.Default()
 
 	router.POST("/", func(c *gin.Context) {
 		var requestPayload RequestPayload
 		c.BindJSON(&requestPayload)
 
-		dbc, err := Connect(dbURL, dbUsername, dbPassword)
+		dbc, err := Connect(databaseCredentials[0], databaseCredentials[1], databaseCredentials[2])
 		if err != nil {
 			fmt.Println("Error connecting to the MySQL database:", err)
 			return
