@@ -13,7 +13,7 @@ import (
 //go:embed config.yaml
 var configFile embed.FS
 
-func init() {
+func GetAPIKey() string {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 
@@ -27,18 +27,18 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
 
-func GetAPIKey() string {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		apiKey = viper.GetString("openai.api_key")
-	}
+	apiKey := viper.GetString("openai.api_key")
+	
 	if apiKey == "" {
 		fmt.Println("OPENAI_API_KEY env var not set")
 		os.Exit(-1)
 	}
 	return apiKey
+}
+
+func GetDatabaseCredentials() []string {
+	return viper.GetStringSlice("openai.database")
 }
 
 func GetAnalystSystemMessages() []string {
