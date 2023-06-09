@@ -26,6 +26,7 @@ var (
 func main() {
 	databaseCredentials := GetDatabaseCredentials()
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	router.POST("/", func(c *gin.Context) {
