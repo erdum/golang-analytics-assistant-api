@@ -75,6 +75,11 @@ func main() {
 			fmt.Println("Error handling prompt", err)
 			return
 		}
+
+		if answer == "" {
+			c.AbortWithStatus(400)
+			return
+		}
 		
 		c.JSON(200, gin.H{
 			"answer": answer,
@@ -82,7 +87,7 @@ func main() {
 		return
 	})
 
-	err := router.Run(":8080")
+	err := router.Run(":80")
 
 	if err != nil {
         panic("[Error] failed to start Gin server due to: " + err.Error())
