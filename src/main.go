@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type RequestPayload struct {
@@ -25,9 +26,13 @@ var (
 
 func main() {
 	databaseCredentials := GetDatabaseCredentials()
-
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*.html")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
 	router.POST("/", func(c *gin.Context) {
 		var requestPayload RequestPayload
@@ -62,21 +67,25 @@ func main() {
 
 		analyst := NewOpenAISession(systemMessages, GetAnalystTemperature())
 		queryParser := NewOpenAISession(GetQueryParserSystemMessages(), GetQueryParserTemperature())
+		input := requestPayload.Query
+		input = strings.TrimSpace(input)
+		answer, err := handlePrompt(input, analyst, queryParser, dbc)
 
-		for {
-			input := requestPayload.Query
-			input = strings.TrimSpace(input)
-
-			answer, err := handlePrompt(input, analyst, queryParser, dbc)
-			if err != nil {
-				fmt.Println("Error handling prompt", err)
-				return
-			}
-			c.Data(200, "application/json", []byte(answer))
-			break
+		if err != nil {
+			fmt.Println("Error handling prompt", err)
+			return
 		}
-
+		
+		c.JSON(200, gin.H{
+			"answer": answer,
+		})
+		return
 	})
 
-	router.Run()
+	err := router.Run(":8080")
+
+	if err != nil {
+        panic("[Error] failed to start Gin server due to: " + err.Error())
+        return
+    }
 }
