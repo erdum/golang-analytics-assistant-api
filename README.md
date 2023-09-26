@@ -58,7 +58,7 @@ Restart=on-failure
 TimeoutSec=600
 ```
 
-> [!WARNING]
+> [!IMPORTANT]
 > put the absolute path app executable right after ExecStart=
 
 - now you can start the service
