@@ -1,59 +1,70 @@
-# Analytics Assistant CLI
-The Data Analytics Assistant is a command-line interface (CLI) tool designed to assist users in obtaining insights from their MySQL databases using natural language questions. By leveraging the power of OpenAI's API, users can easily ask questions about their data, and the assistant will provide answers based on the information stored in the database.
+# Database Analytics Assistant
+The Database Analytics Assistant is a tool with web interface designed to assist users in obtaining insights from their MySQL databases using natural language questions. By leveraging the power of OpenAI's API, users can easily ask questions about their data, and the assistant will provide answers based on the information stored in the database.
 
-![DEMO_1](./assets/demo_1.gif)
+<img src="./demo.png" height="400">
 
 ## Requirements
-- Go 1.18 or later
+- Go 1.20
 - A MySQL database
 - An OpenAI API key
+
 ## Installation
-
-```bash
-curl -s https://raw.githubusercontent.com/FonsecaGoncalo/analytics-assistant/main/installer.sh | bash
-```
-
-### Install From Sources
 - Clone the repository:
 ```bash
-git clone https://github.com/FonsecaGoncalo/analytics-assistant.git
+git clone https://github.com/erdum/golang-analytics-assistant-api.git
 ```
-Navigate to the project directory:
+
+- Navigate to the project src directory:
 ```bash
-cd analytics-assistant
+cd golang-analytics-assistant-api/src
 ```
-Build the CLI tool:
+
+- Rename config.example.yaml to config.yaml
 ```bash
-go build -o analytics-assistant
-```
-This will create an executable named analytics-assistant in the current directory.
-
-## Usage
-```
-Usage:
-analytics-assistant session [flags]
-
-Flags:
--c, --context-file string   Path to a file containing business context
--p, --db-password string    MySQL database password
--u, --db-url string         MySQL database URL
--n, --db-username string    MySQL database username
--h, --help                  help for session
--s, --log-sql               Log SQL
+mv config.example.yaml config.yaml
 ```
 
-To use the CLI tool, you will first need to set and environment variable with the openai API key:
+- Put your OpenAI api key and your database credentials inside config.yaml file
+
+![config.yaml file screenshot](./config.png)
+
+- Build the executable:
 ```bash
-export OPENAI_API_KEY="{you_openai_api_key}"
+go build -o ../app
 ```
+This will create an executable named app in the root directory.
+You can now run the app executable and it will start the application on port :80
 
-And then run:
+## Deployment
+If you want to run this application on production follow the above installation step than before executing the app executable make a service on the server so it will run as a normal service
+
+- create a file called DBAnalytics.service in this directory /lib/systemd/system
 ```bash
-analytics-assistant session --db-url "tcp(localhost:3306)/your_database_name" --db-username "your_username" --db-password "your_password"
+ sudo vim /lib/systemd/system/DBAnalytics.service
 ```
-Replace `your_database_name`, `your_username`, and `your_password` with the appropriate values for your MySQL database. This will initiate an interactive session with the data analyst assistant.
 
-To provide the assistant with additional context when responding to questions, supply a file containing business rules or database field descriptions using the `--context-file` flag.
+- paste this text into the file
+```bash
+[Unit]
+Description=DBAnalytics tool with web interface
+[Install]
+WantedBy=multi-user.target
+[Service]
+Type=simple
+User=root
+PermissionsStartOnly=true
+ExecStart=absolute_path_to_app_executable
+Restart=on-failure
+TimeoutSec=600
+```
+
+> [!WARNING]
+> put the absolute path app executable right after ExecStart=
+
+- now you can start the service
+```bash
+service DBAnalytics.service start
+```
 
 ## License
 This project is licensed under the [MIT License](./LICENSE).
