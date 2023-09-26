@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"log"
+	"path/filepath"
 )
 
 type RequestPayload struct {
@@ -29,8 +30,10 @@ func main() {
 	databaseCredentials := GetDatabaseCredentials()
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-	router.LoadHTMLGlob("templates/*.html")
-	logFile, logFileError := os.OpenFile("requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
+	cwd, _ := os.Executable()
+	cwd = filepath.Dir(cwd)
+	router.LoadHTMLGlob(cwd + "/templates/*.html")
+	logFile, logFileError := os.OpenFile(cwd + "/requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
 
 	if logFileError != nil {
 		log.Panic("[Error] failed to open error log file, error: " + logFileError.Error());
