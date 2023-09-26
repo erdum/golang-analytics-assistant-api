@@ -66,6 +66,10 @@
         })
       });
 
+      if (res.status === 500) {
+        window.alert("Sorry for the inconvenience, an error occurred.");
+      }
+
       if (res.status === 400) {
         window.alert("Your question resulted in more than allowed max token (4096), which is a limit by the OpenAI.");
       }
