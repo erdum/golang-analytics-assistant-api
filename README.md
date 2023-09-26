@@ -1,5 +1,5 @@
 # Database Analytics Assistant
-The Database Analytics Assistant is a tool with web interface designed to assist users in obtaining insights from their MySQL databases using natural language questions. By leveraging the power of OpenAI's API, users can easily ask questions about their data, and the assistant will provide answers based on the information stored in the database.
+The Database Analytics Assistant is a tool with a web interface designed to assist users in obtaining insights from their MySQL databases using natural language questions. By leveraging the power of OpenAI's API, users can easily ask questions about their data, and the assistant will provide answers based on the information stored in the database.
 
 <img src="./demo.png" height="400">
 
@@ -59,7 +59,7 @@ TimeoutSec=600
 ```
 
 > [!IMPORTANT]
-> put the absolute path app executable right after ExecStart=
+> Put the absolute path of the app executable right after ExecStart=
 
 - now you can start the service
 ```bash
