@@ -1,5 +1,6 @@
 openai:
   api_key: "your_openai_api_key"
+  session_key: "AES-128 32bytes key"
   database:
     - "tcp(your_database_ip:3306)/your_database"
     - "your_database_user"

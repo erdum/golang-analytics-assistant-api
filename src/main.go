@@ -7,6 +7,7 @@ import (
 	"os"
 	"log"
 	"path/filepath"
+	"github.com/gin-gonic/contrib/sessions"
 )
 
 type RequestPayload struct {
@@ -27,13 +28,18 @@ var (
 )
 
 func main() {
-	databaseCredentials := GetDatabaseCredentials()
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
 	cwd, _ := os.Executable()
 	cwd = filepath.Dir(cwd)
+	
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.Default()
 	router.LoadHTMLGlob(cwd + "/templates/*.html")
+	
 	logFile, logFileError := os.OpenFile(cwd + "/requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
+	sessionStore := sessions.NewCookieStore([]byte(GetSessionKey()))
+	router.Use(sessions.Sessions("user-session", sessionStore))
+
+	databaseCredentials := GetDatabaseCredentials()
 
 	if logFileError != nil {
 		log.Panic("[Error] failed to open error log file, error: " + logFileError.Error());
@@ -43,7 +49,15 @@ func main() {
 	log.SetOutput(logFile)
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
+		session := sessions.Default(c)
+		user := session.Get("user")
+		isUserIsNew := false
+
+		if user == nil {
+			isUserIsNew = true
+			session.Save()
+		}
+		c.HTML(http.StatusOK, "index.html", gin.H{"isUserIsNew": isUserIsNew})
 	})
 
 	router.POST("/", func(c *gin.Context) {

@@ -37,6 +37,10 @@ func GetAPIKey() string {
 	return apiKey
 }
 
+func GetSessionKey() string {
+	return viper.GetString("openai.session_key")
+}
+
 func GetDatabaseCredentials() []string {
 	return viper.GetStringSlice("openai.database")
 }
