@@ -99,7 +99,7 @@ func main() {
 	err := router.Run(":80")
 
 	if err != nil {
-        panic("[Error] failed to start Gin server due to: " + err.Error())
-        return
-    }
+    panic("[Error] failed to start Gin server due to: " + err.Error())
+    return
+  }
 }
