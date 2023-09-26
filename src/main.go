@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"github.com/gin-gonic/gin"
 	"net/http"
