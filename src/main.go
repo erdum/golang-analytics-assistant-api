@@ -40,28 +40,33 @@ func main() {
 
 		dbc, err := Connect(databaseCredentials[0], databaseCredentials[1], databaseCredentials[2])
 		if err != nil {
-			fmt.Println("Error connecting to the MySQL database:", err)
-			return
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to connect to database!",
+				"error": err,
+			})
 		}
-
 		defer dbc.Close()
 
 		ddl, err := dbc.GetDDL()
 		if err != nil {
-			fmt.Println("Error getting the database schema:", err)
-			return
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to get database schema!",
+				"error": err,
+			})
 		}
 
 		systemMessages := renderSystemMessages(GetAnalystSystemMessages(), ddl)
 
 		if contextFile != "" {
 			c, err := readFileContents(contextFile)
+			
 			if err != nil {
-				fmt.Println("Error reading file", err)
-				return
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": "Unable to read context file!",
+					"error": err,
+				})
 			}
 			context := renderTemplate(GetAnalystContextMessages(), &MessageData{Context: c})
-
 			systemMessages = append(systemMessages, context)
 		}
 
@@ -72,13 +77,17 @@ func main() {
 		answer, err := handlePrompt(input, analyst, queryParser, dbc)
 
 		if err != nil {
-			fmt.Println("Error handling prompt", err)
-			return
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to handle prompt!",
+				"error": err,
+			})
 		}
 
 		if answer == "" {
-			c.AbortWithStatus(400)
-			return
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "OpenAI returned empty response!",
+				"error": nil,
+			})
 		}
 		
 		c.JSON(200, gin.H{
