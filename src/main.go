@@ -57,7 +57,7 @@ func main() {
 		systemMessages := renderSystemMessages(GetAnalystSystemMessages(), ddl)
 
 		if contextFile != "" {
-			c, err := readFileContents(contextFile)
+			contextText, err := readFileContents(contextFile)
 			
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -65,7 +65,7 @@ func main() {
 					"error": err,
 				})
 			}
-			context := renderTemplate(GetAnalystContextMessages(), &MessageData{Context: c})
+			context := renderTemplate(GetAnalystContextMessages(), &MessageData{Context: contextText})
 			systemMessages = append(systemMessages, context)
 		}
 
