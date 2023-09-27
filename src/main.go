@@ -90,20 +90,6 @@ func main() {
 
 		systemMessages := renderSystemMessages(GetAnalystSystemMessages(), ddl)
 
-		if contextFile != "" {
-			contextText, err := readFileContents(contextFile)
-			
-			if err != nil {
-				log.Println("[Error] unable to read context file, error: " + err.Error())
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"message": "Unable to read context file!",
-					"error": err,
-				})
-			}
-			context := renderTemplate(GetAnalystContextMessages(), &MessageData{Context: contextText})
-			systemMessages = append(systemMessages, context)
-		}
-
 		analyst := NewOpenAISession(systemMessages, GetAnalystTemperature())
 		queryParser := NewOpenAISession(GetQueryParserSystemMessages(), GetQueryParserTemperature())
 		input := requestPayload.Query
