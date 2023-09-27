@@ -48,7 +48,7 @@ func main() {
 	log.SetOutput(logFile)
 
 	router.GET("/", func(c *gin.Context) {
-		router.LoadHTMLGlob(cwd + "/templates/*.html")
+		router.LoadHTMLFiles(cwd + "/templates/index.html")
 		session := sessions.Default(c)
 		user := session.Get("user")
 		isUserAuthenticated := false
