@@ -38,9 +38,52 @@
         </form>
       </div>
     </div>
+  {{ else }}
+    <div class="bg-white shadow mt-10 mx-auto w-full sm:rounded-lg md:w-9/12 lg:w-5/12">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Enter your DB credentials</h3>
+        <div class="mt-2 max-w-xl text-sm text-gray-500">
+          <p>Connect your DB you want to query insights.</p>
+        </div>
+        <form action="" method="POST" class="mt-5 flex items-start flex-col gap-y-6">
+          <div class="w-full flex items-center justify-between gap-6 sm:gap-10 flex-wrap sm:flex-nowrap">
+            <div class="w-full">
+              <label for="db-host" class="sr-only">Host</label>
+              <input required type="text" id="db-host" name="db-host" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="DB Host, 123.456.789">
+            </div>
+            <div class="w-full">
+              <label for="db-user" class="sr-only">User</label>
+              <input required type="text" name="db-user" id="db-user" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="DB User, root">
+            </div>
+          </div>
+          <div class="w-full flex items-center justify-between gap-6 sm:gap-10 flex-wrap sm:flex-nowrap">
+            <div class="w-full">
+              <label for="db-password" class="sr-only">Password</label>
+              <input required type="password" name="db-password" id="db-password" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="DB Password, *******">
+            </div>
+            <div class="w-full">
+              <label for="db-name" class="sr-only">DB Name</label>
+              <input required type="text" name="db-name" id="db-name" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="DB Name, MyDB">
+            </div>
+          </div>
+          <button id="db-connect-btn" type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm disabled:bg-gray-500 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <svg class="animate-spin mr-2 hidden" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" class="spinner_ajPY text-white"/></svg>
+            <p>Connect</p>
+          </button>
+        </form>
+      </div>
+    </div>
   {{ end }}
 
   <script>
+    document.getElementById("db-connect-btn").addEventListener("click", ({ currentTarget }) => {
+      currentTarget.setAttribute("disabled", "");
+      currentTarget.children[0].classList.remove("hidden");
+      currentTarget.children[1].textContent = "connecting...";
+      document.getElementById("db-connection-form").submit();
+    });
+
     document.querySelector("form").addEventListener("submit", async (event) => {
       event.preventDefault();
 
