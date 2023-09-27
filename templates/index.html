@@ -9,34 +9,36 @@
 </head>
 
 <body class="p-4 md:px-10 bg-gray-100">
-  <div class="mt-10 mx-auto w-full md:w-9/12 lg:w-5/12">
-    <div class="">
-      <div class="px-4 text-center sm:px-0">
-        <h3 class="text-2xl font-medium leading-6 text-gray-900">Welcome To DB Analytics</h3>
-        <p class="mt-1 text-sm text-gray-600">Ask insights about about your DB in natural language.</p>
+  {{ if .isUserAuthenticated }}
+    <div class="mt-10 mx-auto w-full md:w-9/12 lg:w-5/12">
+      <div class="">
+        <div class="px-4 text-center sm:px-0">
+          <h3 class="text-2xl font-medium leading-6 text-gray-900">Welcome To DB Analytics</h3>
+          <p class="mt-1 text-sm text-gray-600">Ask insights about about your DB in natural language.</p>
+        </div>
+      </div>
+      <div class="mt-5">
+        <form action="" method="POST">
+          <div class="overflow-hidden shadow sm:rounded-md">
+            <div class="bg-white px-6 py-2">
+                <div id="prompts-wrapper" class="h-[520px] overflow-y-auto">
+                  <p name="answer-text" class="w-3/4 mr-auto my-4 py-2 px-4 rounded-md text-sm bg-gray-400 text-white hidden"></p>
+                  <p name="question-text" class="w-3/4 ml-auto my-4 py-2 px-4 rounded-md text-sm bg-indigo-600 text-white hidden"></p>
+                </div>
+            </div>
+            <div class="bg-gray-50 text-right px-6 flex flex-wrap">
+              <input type="text" name="msg" id="first-name" placeholder="Ask a question" autocomplete="off" class="grow mr-6 my-4 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+              <button id="submit-btn" type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 my-4 text-sm font-medium text-white shadow-sm disabled:bg-gray-500 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <svg class="animate-spin mr-2 hidden" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" class="spinner_ajPY text-white"/></svg>
+                <p>Submit</p>
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
-    <div class="mt-5">
-      <form action="" method="POST">
-        <div class="overflow-hidden shadow sm:rounded-md">
-          <div class="bg-white px-6 py-2">
-              <div id="prompts-wrapper" class="h-[520px] overflow-y-auto">
-                <p name="answer-text" class="w-3/4 mr-auto my-4 py-2 px-4 rounded-md text-sm bg-gray-400 text-white hidden"></p>
-                <p name="question-text" class="w-3/4 ml-auto my-4 py-2 px-4 rounded-md text-sm bg-indigo-600 text-white hidden"></p>
-              </div>
-          </div>
-          <div class="bg-gray-50 text-right px-6 flex flex-wrap">
-            <input type="text" name="msg" id="first-name" placeholder="Ask a question" autocomplete="off" class="grow mr-6 my-4 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-            <button id="submit-btn" type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 my-4 text-sm font-medium text-white shadow-sm disabled:bg-gray-500 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-              <svg class="animate-spin mr-2 hidden" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" class="spinner_ajPY text-white"/></svg>
-              <p>Submit</p>
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+  {{ end }}
 
   <script>
     document.querySelector("form").addEventListener("submit", async (event) => {
