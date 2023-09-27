@@ -33,7 +33,6 @@ func main() {
 	
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-	router.LoadHTMLGlob(cwd + "/templates/*.html")
 	
 	logFile, logFileError := os.OpenFile(cwd + "/requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
 	sessionStore := sessions.NewCookieStore([]byte(GetSessionKey()))
@@ -49,15 +48,21 @@ func main() {
 	log.SetOutput(logFile)
 
 	router.GET("/", func(c *gin.Context) {
+		router.LoadHTMLGlob(cwd + "/templates/*.html")
 		session := sessions.Default(c)
 		user := session.Get("user")
-		isUserIsNew := false
+		isUserAuthenticated := false
 
-		if user == nil {
-			isUserIsNew = true
+		if user == "Authenticated" {
+			isUserAuthenticated = true
+		} else {
+			session.Set("user", "Authenticated")
 			session.Save()
 		}
-		c.HTML(http.StatusOK, "index.html", gin.H{"isUserIsNew": isUserIsNew})
+
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"isUserAuthenticated": isUserAuthenticated,
+		})
 	})
 
 	router.POST("/", func(c *gin.Context) {
