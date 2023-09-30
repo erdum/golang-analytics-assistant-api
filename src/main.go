@@ -8,6 +8,7 @@ import (
 	"log"
 	"path/filepath"
 	"github.com/gin-gonic/contrib/sessions"
+	"fmt"
 )
 
 type RequestPayload struct {
@@ -38,8 +39,6 @@ func main() {
 	sessionStore := sessions.NewCookieStore([]byte(GetSessionKey()))
 	router.Use(sessions.Sessions("user-session", sessionStore))
 
-	databaseCredentials := GetDatabaseCredentials()
-
 	if logFileError != nil {
 		log.Panic("[Error] failed to open error log file, error: " + logFileError.Error());
 	}
@@ -50,14 +49,11 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		router.LoadHTMLFiles(cwd + "/templates/index.html")
 		session := sessions.Default(c)
-		user := session.Get("user")
+		dbHost := session.Get("user-db-host")
 		isUserAuthenticated := false
 
-		if user == "Authenticated" {
+		if dbHost != nil {
 			isUserAuthenticated = true
-		} else {
-			session.Set("user", "Authenticated")
-			session.Save()
 		}
 
 		c.HTML(http.StatusOK, "index.html", gin.H{
@@ -65,14 +61,37 @@ func main() {
 		})
 	})
 
+	router.POST("/save-db-credentials", func(c *gin.Context) {
+		host := c.PostForm("db-host")
+		user := c.PostForm("db-user")
+		pass := c.PostForm("db-password")
+		dbName := c.PostForm("db-name")
+
+		session := sessions.Default(c)
+		session.Set("user-db-host", host)
+		session.Set("user-db-user", user)
+		session.Set("user-db-pass", pass)
+		session.Set("user-db-name", dbName)
+		session.Save()
+
+		c.Redirect(http.StatusFound, "/")
+	})
+
 	router.POST("/", func(c *gin.Context) {
 		var requestPayload RequestPayload
 		c.BindJSON(&requestPayload)
 
-		dbc, err := Connect(databaseCredentials[0], databaseCredentials[1], databaseCredentials[2])
+		session := sessions.Default(c)
+		dbHost := fmt.Sprint(session.Get("user-db-host"))
+		dbUser := fmt.Sprint(session.Get("user-db-user"))
+		dbPass := fmt.Sprint(session.Get("user-db-pass"))
+		dbName := fmt.Sprint(session.Get("user-db-name"))
+		dbURL := "tcp(" + dbHost + ":3306)/" + dbName
+
+		dbc, err := Connect(dbURL, dbUser, dbPass)
 		if err != nil {
 			log.Println("[Error] unable to connect to database, error: " + err.Error())
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to connect to database!",
 				"error": err,
 			})
