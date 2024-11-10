@@ -1,6 +1,9 @@
-package main
+package openai
 
 import (
+	"analytics/config"
+	"analytics/db"
+
 	"context"
 	"os"
 	"text/template"
@@ -14,8 +17,17 @@ type Session struct {
 	messages    []openai.ChatCompletionMessage
 }
 
+type MessageData struct {
+	Ddl string
+	Query string
+	QueryResults string
+	Prompt string
+	Context string
+}
+
 var (
-	openAiClient = openai.NewClient(GetAPIKey())
+	openAiClient = openai.NewClient(config.GetAPIKey())
+	logSql bool = false
 )
 
 func NewOpenAISession(systemMessages []string, temperature float32) *Session {
@@ -71,10 +83,10 @@ func (s *Session) prompt(prompt string, role string) string {
 	return strings.TrimSpace(resp.Choices[0].Message.Content)
 }
 
-func handlePrompt(input string, analyst *Session, queryParser *Session, dbc *DBConnection) (string, error) {
+func HandlePrompt(input string, analyst *Session, queryParser *Session, dbc *db.DBConnection) (string, error) {
 	response := analyst.UserPrompt(input)
 
-	m := renderTemplate(GetQueryParserMessage(), &MessageData{
+	m := RenderTemplate(config.GetQueryParserMessage(), &MessageData{
 		Query: response,
 	})
 
@@ -89,7 +101,7 @@ func handlePrompt(input string, analyst *Session, queryParser *Session, dbc *DBC
 		return "", err
 	}
 
-	m = renderTemplate(GetAnalystQueryResultsMessage(), &MessageData{
+	m = RenderTemplate(config.GetAnalystQueryResultsMessage(), &MessageData{
 		QueryResults: queryResult,
 		Query:        query,
 		Prompt:       input,
@@ -98,7 +110,7 @@ func handlePrompt(input string, analyst *Session, queryParser *Session, dbc *DBC
 	return analyst.SystemPrompt(m), nil
 }
 
-func renderSystemMessages(messageTemplates []string, ddl string) []string {
+func RenderSystemMessages(messageTemplates []string, ddl string) []string {
 	m := make([]string, len(messageTemplates))
 
 	data := &MessageData{
@@ -106,7 +118,7 @@ func renderSystemMessages(messageTemplates []string, ddl string) []string {
 	}
 
 	for i := range messageTemplates {
-		renderedTemplate := renderTemplate(messageTemplates[i], data)
+		renderedTemplate := RenderTemplate(messageTemplates[i], data)
 
 		m[i] = renderedTemplate
 	}
@@ -114,7 +126,7 @@ func renderSystemMessages(messageTemplates []string, ddl string) []string {
 	return m
 }
 
-func renderTemplate(tmpl string, data *MessageData) string {
+func RenderTemplate(tmpl string, data *MessageData) string {
 	t, err := template.New("message").Parse(tmpl)
 	if err != nil {
 		panic("Error parsing template")
@@ -129,7 +141,7 @@ func renderTemplate(tmpl string, data *MessageData) string {
 	return buf.String()
 }
 
-func readFileContents(filename string) (string, error) {
+func ReadFileContents(filename string) (string, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err

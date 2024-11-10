@@ -1,46 +1,41 @@
 package main
 
 import (
+	"analytics/config"
+	"analytics/openai"
+	"analytics/db"
+
 	"strings"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"log"
-	"path/filepath"
+	// "fmt"
 )
 
 type RequestPayload struct {
 	Query string `json:"query"`
 }
 
-type MessageData struct {
-	Ddl string
-	Query string
-	QueryResults string
-	Prompt string
-	Context string
-}
-
 var (
 	contextFile string
-	logSql bool = false
 )
 
 func main() {
-	databaseCredentials := GetDatabaseCredentials()
+	databaseCredentials := config.GetDatabaseCredentials()
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-	cwd, _ := os.Executable()
-	cwd = filepath.Dir(cwd)
-	router.LoadHTMLGlob(cwd + "/templates/*.html")
-	logFile, logFileError := os.OpenFile(cwd + "/requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
+	cwd, _ := os.Getwd()
 
-	if logFileError != nil {
-		log.Panic("[Error] failed to open error log file, error: " + logFileError.Error());
-	}
-	defer logFile.Close()
-	log.SetFlags(log.LstdFlags|log.LUTC|log.Lshortfile)
-	log.SetOutput(logFile)
+	router.LoadHTMLGlob(cwd + "/templates/*.html")
+	// logFile, logFileError := os.OpenFile(cwd + "/requests_error.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 644)
+
+	// if logFileError != nil {
+	// 	log.Panic("[Error] failed to open error log file, error: " + logFileError.Error());
+	// }
+	// defer logFile.Close()
+	// log.SetFlags(log.LstdFlags|log.LUTC|log.Lshortfile)
+	// log.SetOutput(logFile)
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
@@ -50,7 +45,7 @@ func main() {
 		var requestPayload RequestPayload
 		c.BindJSON(&requestPayload)
 
-		dbc, err := Connect(databaseCredentials[0], databaseCredentials[1], databaseCredentials[2])
+		dbc, err := db.Connect(databaseCredentials[0], databaseCredentials[1], databaseCredentials[2])
 		if err != nil {
 			log.Println("[Error] unable to connect to database, error: " + err.Error())
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -69,10 +64,10 @@ func main() {
 			})
 		}
 
-		systemMessages := renderSystemMessages(GetAnalystSystemMessages(), ddl)
+		systemMessages := openai.RenderSystemMessages(config.GetAnalystSystemMessages(), ddl)
 
 		if contextFile != "" {
-			contextText, err := readFileContents(contextFile)
+			contextText, err := openai.ReadFileContents(contextFile)
 			
 			if err != nil {
 				log.Println("[Error] unable to read context file, error: " + err.Error())
@@ -81,15 +76,15 @@ func main() {
 					"error": err,
 				})
 			}
-			context := renderTemplate(GetAnalystContextMessages(), &MessageData{Context: contextText})
+			context := openai.RenderTemplate(config.GetAnalystContextMessages(), &openai.MessageData{Context: contextText})
 			systemMessages = append(systemMessages, context)
 		}
 
-		analyst := NewOpenAISession(systemMessages, GetAnalystTemperature())
-		queryParser := NewOpenAISession(GetQueryParserSystemMessages(), GetQueryParserTemperature())
+		analyst := openai.NewOpenAISession(systemMessages, config.GetAnalystTemperature())
+		queryParser := openai.NewOpenAISession(config.GetQueryParserSystemMessages(), config.GetQueryParserTemperature())
 		input := requestPayload.Query
 		input = strings.TrimSpace(input)
-		answer, err := handlePrompt(input, analyst, queryParser, dbc)
+		answer, err := openai.HandlePrompt(input, analyst, queryParser, dbc)
 
 		if err != nil {
 			log.Println("[Error] failed to handle prompt, error: " + err.Error())
@@ -113,7 +108,7 @@ func main() {
 		return
 	})
 
-	err := router.Run(":80")
+	err := router.Run(":8000")
 
 	if err != nil {
     log.Panic("[Error] failed to start Gin server due to: " + err.Error())
